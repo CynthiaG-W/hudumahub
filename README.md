@@ -22,7 +22,5 @@ The project will initially be built using React and external APIs, and later ext
 - HTML
 - CSS
 - OpenStreetMap APIs
-- Flask
-- SQLAlchemy
 
 
