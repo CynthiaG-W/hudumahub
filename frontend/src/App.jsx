@@ -1,6 +1,17 @@
+import { useState } from "react";
 import "./App.css";
 
 function App() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [message, setMessage] = useState("");
+  const handleSearch = () => {
+  if (searchTerm.trim() === "") {
+    setMessage("Please enter a service to search for.");
+    return;
+  }
+
+  setMessage(`You searched for: ${searchTerm}`);
+};
   return (
     <div className="app">
       <nav className="navbar">
@@ -24,11 +35,17 @@ function App() {
 
           <div className="search-container">
             <input
-              type="text"
+               type="text"
               placeholder="What service are you looking for?"
+               value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
             />
-            <button>Search</button>
+            <button onClick={handleSearch}>
+            Search
+            </button>
           </div>
+
+            {message && <p className="search-message">{message}</p>}
         </section>
 
         <section className="services" id="services">

@@ -149,3 +149,9 @@ body {
     margin-top: 10px;
   }
 }
+.search-message {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #2563eb;
+  font-weight: 500;
+}
