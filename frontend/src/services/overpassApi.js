@@ -1,4 +1,5 @@
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+const NOMINATIM_URL =
+  "https://nominatim.openstreetmap.org/search";
 
 export const SERVICE_TYPES = {
   hospital: "hospital",
@@ -19,33 +20,37 @@ export async function searchServices(serviceType) {
   const normalizedType =
     SERVICE_TYPES[serviceType] || serviceType;
 
-  const query = `
-    [out:json][timeout:25];
+  const query = `${normalizedType} in Nairobi`;
 
-    area["name"="Nairobi"]["boundary"="administrative"]->.searchArea;
-
-    (
-      node["amenity"="${normalizedType}"](area.searchArea);
-      way["amenity"="${normalizedType}"](area.searchArea);
-      relation["amenity"="${normalizedType}"](area.searchArea);
-    );
-
-    out center;
-  `;
-
-  const response = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain",
-    },
-    body: query,
-  });
+  const response = await fetch(
+    `${NOMINATIM_URL}?format=jsonv2&q=${encodeURIComponent(
+      query
+    )}&limit=50`
+  );
 
   if (!response.ok) {
     throw new Error(
-      `Overpass API request failed: ${response.status}`
+      `Nominatim API request failed: ${response.status}`
     );
   }
 
-  return response.json();
+  const data = await response.json();
+
+  return {
+    elements: data.map((place) => ({
+      type: place.osm_type,
+      id: place.osm_id,
+      lat: parseFloat(place.lat),
+      lon: parseFloat(place.lon),
+      center: {
+        lat: parseFloat(place.lat),
+        lon: parseFloat(place.lon),
+      },
+      tags: {
+        name: place.name || "Unnamed service",
+        amenity: place.type,
+        address: place.display_name,
+      },
+    })),
+  };
 }
