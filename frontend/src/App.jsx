@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { searchServices } from "./services/overpassApi";
+import { searchServices } from "./services/nominatimApi";
 import ServiceCard from "./components/ServiceCard";
 import MapView from "./components/MapView";
 import "./App.css";
