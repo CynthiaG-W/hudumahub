@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { searchServices } from "./services/overpassApi";
+import { searchServices } from "./services/nominatimApi";
 import ServiceCard from "./components/ServiceCard";
+import MapView from "./components/MapView";
 import "./App.css";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState("");
   const [services, setServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const resultsPerPage = 10;
 
   const handleSearch = async () => {
     if (searchTerm.trim() === "") {
@@ -19,6 +24,7 @@ function App() {
     setLoading(true);
     setError("");
     setMessage("");
+    setSelectedService(null);
 
     try {
       const data = await searchServices(
@@ -26,6 +32,7 @@ function App() {
       );
 
       setServices(data.elements);
+      setCurrentPage(1);
 
       setMessage(
         `Found ${data.elements.length} results for ${searchTerm}.`
@@ -43,11 +50,13 @@ function App() {
     setLoading(true);
     setError("");
     setMessage("");
+    setSelectedService(null);
 
     try {
       const data = await searchServices(serviceType);
 
       setServices(data.elements);
+      setCurrentPage(1);
 
       setMessage(`Found ${data.elements.length} services.`);
     } catch (error) {
@@ -58,6 +67,18 @@ function App() {
       setLoading(false);
     }
   };
+
+  const totalPages = Math.ceil(
+    services.length / resultsPerPage
+  );
+
+  const startIndex =
+    (currentPage - 1) * resultsPerPage;
+
+  const currentServices = services.slice(
+    startIndex,
+    startIndex + resultsPerPage
+  );
 
   return (
     <div className="app">
@@ -111,14 +132,48 @@ function App() {
             </p>
           )}
 
+          {services.length > 0 && (
+            <MapView
+              services={services}
+              selectedService={selectedService}
+            />
+          )}
+
           <div className="service-results">
-            {services.slice(0, 10).map((service) => (
+            {currentServices.map((service) => (
               <ServiceCard
                 key={`${service.type}-${service.id}`}
                 service={service}
+                onViewMap={setSelectedService}
               />
             ))}
           </div>
+
+          {services.length > resultsPerPage && (
+            <div className="pagination">
+              <button
+                onClick={() =>
+                  setCurrentPage((page) => page - 1)
+                }
+                disabled={currentPage === 1}
+              >
+                ← Previous
+              </button>
+
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((page) => page + 1)
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </section>
 
         <section className="services" id="services">

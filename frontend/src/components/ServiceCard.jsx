@@ -1,22 +1,35 @@
-function ServiceCard({ service }) {
-  const name = service.tags?.name || "Unnamed service";
-  const type = service.tags?.amenity || "Essential service";
+function ServiceCard({ service, onViewMap }) {
+  const name = service.tags?.name || "Unnamed Service";
+  const type = service.tags?.amenity || "Essential Service";
 
   const latitude = service.lat || service.center?.lat;
   const longitude = service.lon || service.center?.lon;
+
+  const address =
+    service.tags?.["addr:street"] ||
+    service.tags?.["addr:full"] ||
+    service.tags?.["addr:city"] ||
+    "Address not available";
 
   return (
     <div className="service-card">
       <h3>{name}</h3>
 
-      <p>
-        <strong>Type:</strong> {type}
+      <p className="service-type">
+        {type}
+      </p>
+
+      <p className="service-address">
+        📍 {address}
       </p>
 
       {latitude && longitude && (
-        <p>
-          📍 {latitude.toFixed(4)}, {longitude.toFixed(4)}
-        </p>
+        <button
+          className="view-map-button"
+          onClick={() => onViewMap(service)}
+        >
+          View on Map
+        </button>
       )}
     </div>
   );
