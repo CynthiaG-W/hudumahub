@@ -1,5 +1,4 @@
-const NOMINATIM_URL =
-  "https://nominatim.openstreetmap.org/search";
+const API_URL = "http://127.0.0.1:5000";
 
 export const SERVICE_TYPES = {
   hospital: "hospital",
@@ -18,38 +17,36 @@ export const SERVICE_TYPES = {
 
 export async function searchServices(serviceType) {
   const normalizedType =
-    SERVICE_TYPES[serviceType] || serviceType;
-
-  const query = `${normalizedType} in Nairobi`;
+    SERVICE_TYPES[serviceType.toLowerCase()] || serviceType.toLowerCase();
 
   const response = await fetch(
-    `${NOMINATIM_URL}?format=jsonv2&q=${encodeURIComponent(
-      query
-    )}&limit=50`
+    `${API_URL}/api/services/search?category=${encodeURIComponent(
+      normalizedType
+    )}`
   );
 
   if (!response.ok) {
     throw new Error(
-      `Nominatim API request failed: ${response.status}`
+      `HudumaHub API request failed: ${response.status}`
     );
   }
 
   const data = await response.json();
 
   return {
-    elements: data.map((place) => ({
+    elements: data.results.map((place) => ({
       type: place.osm_type,
       id: place.osm_id,
-      lat: parseFloat(place.lat),
-      lon: parseFloat(place.lon),
+      lat: place.latitude,
+      lon: place.longitude,
       center: {
-        lat: parseFloat(place.lat),
-        lon: parseFloat(place.lon),
+        lat: place.latitude,
+        lon: place.longitude,
       },
       tags: {
         name: place.name || "Unnamed service",
-        amenity: place.type,
-        address: place.display_name,
+        amenity: place.category,
+        address: place.address,
       },
     })),
   };
