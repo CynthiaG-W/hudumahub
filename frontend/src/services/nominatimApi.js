@@ -1,53 +1,29 @@
-const API_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = "http://127.0.0.1:5000/api";
 
-export const SERVICE_TYPES = {
-  hospital: "hospital",
-  hospitals: "hospital",
-  pharmacy: "pharmacy",
-  pharmacies: "pharmacy",
-  police: "police",
-  "police station": "police",
-  "police stations": "police",
-  atm: "atm",
-  atms: "atm",
-  petrol: "fuel",
-  "petrol station": "fuel",
-  "petrol stations": "fuel",
-};
-
-export async function searchServices(serviceType) {
-  const normalizedType =
-    SERVICE_TYPES[serviceType.toLowerCase()] || serviceType.toLowerCase();
-
+export async function searchLocations(query) {
   const response = await fetch(
-    `${API_URL}/api/services/search?category=${encodeURIComponent(
-      normalizedType
-    )}`
+    `${API_BASE_URL}/search?q=${encodeURIComponent(query)}`
   );
 
   if (!response.ok) {
-    throw new Error(
-      `HudumaHub API request failed: ${response.status}`
-    );
+    throw new Error("Location search failed");
   }
 
   const data = await response.json();
 
-  return {
-    elements: data.results.map((place) => ({
-      type: place.osm_type,
-      id: place.osm_id,
-      lat: place.latitude,
-      lon: place.longitude,
-      center: {
-        lat: place.latitude,
-        lon: place.longitude,
-      },
-      tags: {
-        name: place.name || "Unnamed service",
-        amenity: place.category,
-        address: place.address,
-      },
-    })),
-  };
+  return data.results;
+}
+
+export async function searchServicesByCategory(category) {
+  const response = await fetch(
+    `${API_BASE_URL}/services/search?category=${encodeURIComponent(category)}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Service search failed");
+  }
+
+  const data = await response.json();
+
+  return data.results;
 }

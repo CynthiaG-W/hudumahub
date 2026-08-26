@@ -58,32 +58,11 @@ def search_locations(query):
 def search_by_category(category):
     category = category.lower().strip()
 
-    query = SERVICE_CATEGORIES.get(category)
-
-    if not query:
+    if category not in SERVICE_CATEGORIES:
         return None
 
-    results = search_locations(query)
+    services = Service.query.filter_by(
+        category=category
+    ).all()
 
-    for result in results:
-        existing_service = Service.query.filter_by(
-            osm_id=result.get("osm_id"),
-            osm_type=result.get("osm_type")
-        ).first()
-
-        if not existing_service:
-            service = Service(
-                name=result["name"],
-                category=category,
-                address=result["address"],
-                latitude=result["latitude"],
-                longitude=result["longitude"],
-                osm_id=result.get("osm_id"),
-                osm_type=result.get("osm_type")
-            )
-
-            db.session.add(service)
-
-    db.session.commit()
-
-    return results
+    return [service.to_dict() for service in services]
