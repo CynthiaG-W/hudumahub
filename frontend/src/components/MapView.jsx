@@ -17,11 +17,8 @@ function MapController({ selectedService }) {
       return;
     }
 
-    const latitude =
-      selectedService.lat || selectedService.center?.lat;
-
-    const longitude =
-      selectedService.lon || selectedService.center?.lon;
+    const latitude = selectedService.latitude;
+    const longitude = selectedService.longitude;
 
     if (latitude && longitude) {
       map.flyTo([latitude, longitude], 16);
@@ -50,29 +47,30 @@ function MapView({ services, selectedService }) {
         <MapController selectedService={selectedService} />
 
         {services.map((service) => {
-          const latitude =
-            service.lat || service.center?.lat;
+          const latitude = service.latitude;
+          const longitude = service.longitude;
 
-          const longitude =
-            service.lon || service.center?.lon;
-
-          if (!latitude || !longitude) {
+          if (latitude == null || longitude == null) {
             return null;
           }
 
           return (
             <Marker
-              key={`${service.type}-${service.id}`}
+              key={service.id}
               position={[latitude, longitude]}
             >
               <Popup>
                 <strong>
-                  {service.tags?.name || "Unnamed Service"}
+                  {service.name || "Unnamed Service"}
                 </strong>
 
                 <br />
 
-                {service.tags?.amenity || "Essential Service"}
+                {service.category || "Essential Service"}
+
+                <br />
+
+                {service.address || "Address not available"}
               </Popup>
             </Marker>
           );

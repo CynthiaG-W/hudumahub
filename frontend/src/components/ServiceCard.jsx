@@ -1,15 +1,11 @@
 function ServiceCard({ service, onViewMap }) {
-  const name = service.tags?.name || "Unnamed Service";
-  const type = service.tags?.amenity || "Essential Service";
+  const name = service.name || "Unnamed Service";
+  const type = service.category || "Essential Service";
 
-  const latitude = service.lat || service.center?.lat;
-  const longitude = service.lon || service.center?.lon;
+  const latitude = service.latitude;
+  const longitude = service.longitude;
 
-  const address =
-    service.tags?.["addr:street"] ||
-    service.tags?.["addr:full"] ||
-    service.tags?.["addr:city"] ||
-    "Address not available";
+  const address = service.address || "Address not available";
 
   return (
     <div className="service-card">

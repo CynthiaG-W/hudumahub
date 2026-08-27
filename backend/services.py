@@ -21,7 +21,7 @@ SERVICE_CATEGORIES = {
 
 def search_locations(query):
     params = {
-        "q": query,
+        "q": f"{query}, Nairobi, Kenya",
         "format": "jsonv2",
         "limit": 40,
         "addressdetails": 1,
