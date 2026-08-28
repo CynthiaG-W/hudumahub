@@ -242,6 +242,96 @@ def login():
         "user": user.to_dict()
     }, 200
 
+# GET current user
+@app.route("/api/users/<int:user_id>", methods=["GET"])
+@jwt_required()
+def get_user(user_id):
+    current_user_id = int(get_jwt_identity())
+
+    if current_user_id != user_id:
+        return {
+            "error": "Unauthorized"
+        }, 403
+
+    user = User.query.get_or_404(user_id)
+
+    return user.to_dict()
+
+
+# UPDATE current user
+@app.route("/api/users/<int:user_id>", methods=["PUT"])
+@jwt_required()
+def update_user(user_id):
+    current_user_id = int(get_jwt_identity())
+
+    if current_user_id != user_id:
+        return {
+            "error": "Unauthorized"
+        }, 403
+
+    user = User.query.get_or_404(user_id)
+
+    data = request.get_json()
+
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+
+    if username and username != user.username:
+        existing_username = User.query.filter_by(
+            username=username
+        ).first()
+
+        if existing_username:
+            return {
+                "error": "Username already exists"
+            }, 409
+
+        user.username = username
+
+    if email and email != user.email:
+        existing_email = User.query.filter_by(
+            email=email
+        ).first()
+
+        if existing_email:
+            return {
+                "error": "Email already exists"
+            }, 409
+
+        user.email = email
+
+    if password:
+        user.set_password(password)
+
+    db.session.commit()
+
+    return {
+        "message": "User updated successfully",
+        "user": user.to_dict()
+    }
+
+
+# DELETE current user
+@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+@jwt_required()
+def delete_user(user_id):
+    current_user_id = int(get_jwt_identity())
+
+    if current_user_id != user_id:
+        return {
+            "error": "Unauthorized"
+        }, 403
+
+    user = User.query.get_or_404(user_id)
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return {
+        "message": "User deleted successfully"
+    }
+
 # CREATE a saved service
 @app.route("/api/saved-services", methods=["POST"])
 @jwt_required()

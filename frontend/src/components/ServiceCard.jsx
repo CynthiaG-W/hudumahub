@@ -52,6 +52,7 @@ function ServiceCard({ service, onViewMap, user }) {
       );
 
       const data = await response.json();
+      console.log("Save service response:", response.status, data);
 
       if (!response.ok) {
         if (
