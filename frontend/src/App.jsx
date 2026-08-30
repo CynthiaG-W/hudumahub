@@ -9,11 +9,10 @@ import Register from "./components/auth/Register";
 
 import "./App.css";
 
-const API_BASE_URL = "http://127.0.0.1:5000/api";
+const API_BASE_URL = "https://hudumahub.onrender.com/api";
 
-// ========================================
-// Create a consistent unique key for a service
-// ========================================
+// create a consistent unique key for a service //
+
 const getServiceKey = (service) => {
   if (service?.osm_type && service?.osm_id) {
     return `${service.osm_type}-${service.osm_id}`;
@@ -28,9 +27,9 @@ const getServiceKey = (service) => {
 };
 
 function App() {
-  // =========================
-  // Navigation & Authentication
-  // =========================
+
+  // Navigation & Authentication //
+
 
   const [page, setPage] = useState("home");
 
@@ -39,9 +38,9 @@ function App() {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  // =========================
-  // My Hub State
-  // =========================
+ 
+  // My Hub State //
+
 
   const [savedServices, setSavedServices] = useState([]);
   const [savedLoading, setSavedLoading] = useState(false);
@@ -50,9 +49,9 @@ function App() {
 
   const getToken = () => localStorage.getItem("hudumahub_token");
 
-  // =========================
-  // Logout
-  // =========================
+ 
+  // Logout //
+
 
   const handleLogout = () => {
     localStorage.removeItem("hudumahub_token");
@@ -65,9 +64,8 @@ function App() {
     setPage("home");
   };
 
-  // =========================
-  // Fetch My Hub
-  // =========================
+
+  // Fetch My Hub //
 
   const fetchSavedServices = async () => {
     const token = getToken();
@@ -118,9 +116,8 @@ function App() {
     }
   }, [user]);
 
-  // =========================
-  // Add Place to My Hub
-  // =========================
+  // Add Place to My Hub //
+
 
   const handleAddToHub = async (service) => {
     const token = getToken();
@@ -191,9 +188,9 @@ function App() {
     }
   };
 
-  // =========================
-  // Update Place in My Hub
-  // =========================
+ 
+  // Update Place in My Hub //
+
 
   const handleUpdateSavedService = async (id, updates) => {
     const token = getToken();
@@ -251,9 +248,8 @@ function App() {
     }
   };
 
-  // =========================
-  // Remove Place from My Hub
-  // =========================
+  // Remove Place from My Hub //
+ 
 
   const handleRemoveSavedService = async (id) => {
     const token = getToken();
@@ -307,9 +303,8 @@ function App() {
     }
   };
 
-  // =========================
-  // Authentication
-  // =========================
+  // Authentication //
+
 
   const handleAuthSuccess = (data) => {
     if (data.access_token) {
@@ -333,25 +328,25 @@ function App() {
     setPage("home");
   };
 
-  // =========================
-  // Navigation
-  // =========================
+ 
+  // Navigation //
+
 
   const handleNavigate = (nextPage) => {
     setPage(nextPage);
   };
 
-  // =========================
-  // Saved Service IDs
-  // =========================
+
+  // Saved Service IDs //
+
 
   const savedServiceIds = new Set(
     savedServices.map((item) => getServiceKey(item.service))
   );
 
-  // =========================
-  // App Layout
-  // =========================
+
+  // App Layout //
+
 
   return (
     <div className="app">
