@@ -1,83 +1,175 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
+MapContainer,
+Marker,
+Popup,
+TileLayer,
+useMap,
 } from "react-leaflet";
 
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-function MapController({ selectedService }) {
-  const map = useMap();
+// Fix Leaflet marker icons
+delete L.Icon.Default.prototype._getIconUrl;
 
-  useEffect(() => {
-    if (!selectedService) {
-      return;
-    }
+L.Icon.Default.mergeOptions({
+iconRetinaUrl:
+"https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+iconUrl:
+"https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+shadowUrl:
+"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
-    const latitude = selectedService.latitude;
-    const longitude = selectedService.longitude;
+function FlyToSelectedService({ service }) {
+const map = useMap();
 
-    if (latitude && longitude) {
-      map.flyTo([latitude, longitude], 16);
-    }
-  }, [selectedService, map]);
-
-  return null;
+useEffect(() => {
+if (
+!service ||
+service.latitude == null ||
+service.longitude == null
+) {
+return;
 }
 
-function MapView({ services, selectedService }) {
-  const nairobiPosition = [-1.286389, 36.817223];
+const latitude = Number(service.latitude);
+const longitude = Number(service.longitude);
 
-  return (
-    <div className="map-container">
-      <MapContainer
-        center={nairobiPosition}
-        zoom={12}
-        scrollWheelZoom={true}
-        style={{ height: "500px", width: "100%" }}
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+if (
+  Number.isNaN(latitude) ||
+  Number.isNaN(longitude)
+) {
+  return;
+}
 
-        <MapController selectedService={selectedService} />
+map.flyTo(
+  [latitude, longitude],
+  16,
+  {
+    duration: 1.2,
+  }
+);
 
-        {services.map((service) => {
-          const latitude = service.latitude;
-          const longitude = service.longitude;
+}, [service, map]);
 
-          if (latitude == null || longitude == null) {
-            return null;
-          }
+return null;
+}
 
-          return (
-            <Marker
-              key={service.id}
-              position={[latitude, longitude]}
-            >
-              <Popup>
-                <strong>
-                  {service.name || "Unnamed Service"}
-                </strong>
+function ServiceMarker({
+service,
+index,
+isSelected,
+onSelectService,
+}) {
+const markerRef = useRef(null);
 
-                <br />
+useEffect(() => {
+if (isSelected && markerRef.current) {
+markerRef.current.openPopup();
+}
+}, [isSelected]);
 
-                {service.category || "Essential Service"}
+const latitude = Number(service.latitude);
+const longitude = Number(service.longitude);
 
-                <br />
+return (
+<Marker
+ref={markerRef}
+position={[latitude, longitude]}
+eventHandlers={{
+click: () => onSelectService(service),
+}}
+> <Popup> <div className="map-popup"> <strong>{service.name || "Service location"}</strong>
 
-                {service.address || "Address not available"}
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+      {service.category && (
+        <>
+          <br />
+          <span>{service.category}</span>
+        </>
+      )}
+
+      {service.address && (
+        <>
+          <br />
+          <small>{service.address}</small>
+        </>
+      )}
     </div>
-  );
+  </Popup>
+</Marker>
+
+);
+}
+
+function MapView({
+services,
+selectedService,
+onSelectService,
+}) {
+// Nairobi fallback coordinates
+const defaultCenter = [-1.286389, 36.817223];
+
+const validServices = services.filter((service) => {
+const latitude = Number(service.latitude);
+const longitude = Number(service.longitude);
+
+return (
+  service.latitude != null &&
+  service.longitude != null &&
+  !Number.isNaN(latitude) &&
+  !Number.isNaN(longitude)
+);
+
+});
+
+const center =
+validServices.length > 0
+? [
+Number(validServices[0].latitude),
+Number(validServices[0].longitude),
+]
+: defaultCenter;
+
+const isSameService = (service) =>
+selectedService &&
+service.osm_type === selectedService.osm_type &&
+service.osm_id === selectedService.osm_id;
+
+return ( <div className="map-container">
+<MapContainer
+center={center}
+zoom={12}
+scrollWheelZoom={true}
+style={{
+height: "420px",
+width: "100%",
+}}
+> <TileLayer
+       attribution="&copy; OpenStreetMap contributors"
+       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+     />
+
+    <FlyToSelectedService
+      service={selectedService}
+    />
+
+    {validServices.map((service, index) => (
+      <ServiceMarker
+        key={`${service.osm_type || "service"}-${
+          service.osm_id || index
+        }`}
+        service={service}
+        index={index}
+        isSelected={isSameService(service)}
+        onSelectService={onSelectService}
+      />
+    ))}
+  </MapContainer>
+</div>
+
+);
 }
 
 export default MapView;

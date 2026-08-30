@@ -6,9 +6,23 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+
+    username = db.Column(
+        db.String(80),
+        unique=True,
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(120),
+        unique=True,
+        nullable=False
+    )
+
+    password_hash = db.Column(
+        db.String(255),
+        nullable=False
+    )
 
     saved_services = db.relationship(
         "SavedService",
@@ -20,7 +34,10 @@ class User(db.Model):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(
+            self.password_hash,
+            password
+        )
 
     def to_dict(self):
         return {
@@ -33,14 +50,40 @@ class User(db.Model):
 class Service(db.Model):
     __tablename__ = "services"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    address = db.Column(db.String(255))
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    osm_id = db.Column(db.BigInteger)
-    osm_type = db.Column(db.String(20))
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    name = db.Column(
+        db.String(150),
+        nullable=False
+    )
+
+    category = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+    address = db.Column(
+        db.String(255)
+    )
+
+    latitude = db.Column(
+        db.Float
+    )
+
+    longitude = db.Column(
+        db.Float
+    )
+
+    osm_id = db.Column(
+        db.BigInteger
+    )
+
+    osm_type = db.Column(
+        db.String(20)
+    )
 
     saved_by = db.relationship(
         "SavedService",
@@ -64,7 +107,10 @@ class Service(db.Model):
 class SavedService(db.Model):
     __tablename__ = "saved_services"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     user_id = db.Column(
         db.Integer,
@@ -77,6 +123,20 @@ class SavedService(db.Model):
         db.ForeignKey("services.id"),
         nullable=False
     )
+
+    # Personal note belonging to the user
+    note = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # Whether the user marked this service as a favourite
+    is_favorite = db.Column(
+    db.Boolean,
+    default=False,
+    nullable=False,
+    server_default="false"
+    ) 
 
     user = db.relationship(
         "User",
@@ -93,5 +153,11 @@ class SavedService(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "service_id": self.service_id,
-            "service": self.service.to_dict() if self.service else None
+            "note": self.note,
+            "is_favorite": self.is_favorite,
+            "service": (
+                self.service.to_dict()
+                if self.service
+                else None
+            )
         }
