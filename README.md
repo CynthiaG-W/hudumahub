@@ -14,13 +14,13 @@ Finding essential services quickly can be difficult, especially when someone is 
 
 HudumaHub provides a centralized platform where users can:
 
-* Search for locations and services in Nairobi
-* Browse services by category
-* View service locations on an interactive map
-* View service details through map popups and service cards
-* Access service addresses and coordinates
-* Retrieve service data through a Flask REST API
-* Store service information in a PostgreSQL database
+- Search for locations and essential services in Nairobi
+- Browse services by category
+- View service locations on an interactive map
+- View service details through map popups and service cards
+- Access service addresses and coordinates
+- Retrieve and manage application data through a Flask REST API
+- Store data in a PostgreSQL database
 
 ---
 
@@ -30,44 +30,43 @@ HudumaHub provides a centralized platform where users can:
 
 Phase 1 focused on building the frontend and integrating location-based services.
 
-Implemented features:
+**Implemented features:**
 
-* React + Vite frontend
-* Responsive service interface
-* Service category selection
-* Location search
-* OpenStreetMap/Nominatim integration
-* Leaflet interactive map
-* Service markers
-* Marker popups
-* Service cards
-* Loading and error states
+- React + Vite frontend
+- Responsive service interface
+- Service category selection
+- Location search
+- OpenStreetMap/Nominatim integration
+- Leaflet interactive map
+- Service markers and popups
+- Service cards
+- Loading and error states
 
 ### Phase 2 — Flask Backend & Database
 
-Phase 2 introduced the backend API and PostgreSQL database.
+Phase 2 introduced the backend API and PostgreSQL database and expanded the application to support persistent data and user-related resources.
 
-Implemented features:
+**Implemented features:**
 
-* Flask REST API
-* PostgreSQL database
-* SQLAlchemy ORM
-* Flask-Migrate database migrations
-* Service model
-* CRUD endpoints for services
-* Category-based service search
-* Nominatim integration through the backend
-* OpenStreetMap identifiers stored with services
-* React frontend connected to the Flask API
-* Database-backed service results
+- Flask REST API
+- PostgreSQL database
+- SQLAlchemy ORM
+- Flask-Migrate database migrations
+- Database models and relationships
+- Service data stored in the database
+- User and saved service resources
+- CRUD functionality for saved services
+- Notes and favourites for saved services
+- React frontend connected to the Flask API
+- Database-backed application data
 
-Current service categories:
+**Current service categories:**
 
-* Hospitals
-* Pharmacies
-* Police stations
-* ATMs
-* Fuel stations
+- Hospitals
+- Pharmacies
+- Police stations
+- ATMs
+- Fuel stations
 
 ---
 
@@ -85,149 +84,71 @@ Flask REST API
       ▼
 PostgreSQL Database
       │
-      ▼
-Service Data
-```
+      ├── Services
+      ├── Users
+      └── Saved Services
 
-The React frontend communicates with the Flask API, while Flask manages service data and database operations. Location information is retrieved using OpenStreetMap's Nominatim service.
+      Technology Stack
+Frontend
+React
+Vite
+JavaScript
+HTML
+CSS
+Leaflet
+React-Leaflet
+Backend
+Python
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-CORS
+Requests
+Database
+PostgreSQL
+External Services
+OpenStreetMap
+Nominatim
+Core Application Resources
+Services
 
----
+Services represent essential locations that users can search for and view. Each service contains information such as its name, category, address, and geographical coordinates.
 
-## Technology Stack
+Users
 
-### Frontend
+Users represent individuals using the HudumaHub application and are associated with their own saved services.
 
-* React
-* Vite
-* JavaScript
-* HTML
-* CSS
-* Leaflet
-* React-Leaflet
+Saved Services
 
-### Backend
+Saved Services connect users to services they want to keep track of.
 
-* Python
-* Flask
-* Flask-SQLAlchemy
-* Flask-Migrate
-* Flask-CORS
-* Requests
+Users can:
 
-### Database
+Save a service
+View their saved services
+Add or update a personal note
+Mark a service as a favourite
+Remove a saved service
 
-* PostgreSQL
+This allows users to manage their own service-related information while maintaining relationships between users and services in the database.
 
-### External Services
+CRUD Functionality
 
-* OpenStreetMap
-* Nominatim
+HudumaHub implements CRUD functionality around user-specific saved services:
 
----
+Operation	Functionality
+Create	Save a service to a user's collection
+Read	View saved services
+Update	Add or update notes and favourite status
+Delete	Remove a saved service
 
-## Backend API
+The main service directory is primarily used for searching and viewing essential services.
 
-### Health / Welcome
+Database Models
+Service
 
-```text
-GET /
-```
+The Service resource contains:
 
-Returns a welcome message from the API.
-
-### Database Test
-
-```text
-GET /api/db-test
-```
-
-Tests the connection between Flask and PostgreSQL.
-
-### Get All Services
-
-```text
-GET /api/services
-```
-
-Returns all services stored in the database.
-
-### Get One Service
-
-```text
-GET /api/services/<service_id>
-```
-
-Returns a specific service.
-
-### Create a Service
-
-```text
-POST /api/services
-```
-
-Creates a new service.
-
-Example request:
-
-```json
-{
-  "name": "Example Hospital",
-  "category": "hospital",
-  "address": "Nairobi, Kenya",
-  "latitude": -1.286389,
-  "longitude": 36.817223
-}
-```
-
-### Update a Service
-
-```text
-PUT /api/services/<service_id>
-```
-
-Updates an existing service.
-
-### Delete a Service
-
-```text
-DELETE /api/services/<service_id>
-```
-
-Deletes an existing service.
-
-### Search Locations
-
-```text
-GET /api/search?q=<query>
-```
-
-Searches for locations using Nominatim.
-
-### Search Services by Category
-
-```text
-GET /api/services/search?category=<category>
-```
-
-Returns services stored in the database for a supported category.
-
-Supported categories:
-
-```text
-hospital
-pharmacy
-police
-atm
-fuel
-```
-
----
-
-## Database Model
-
-The main `Service` resource contains:
-
-```text
 id
 name
 category
@@ -236,174 +157,106 @@ latitude
 longitude
 osm_id
 osm_type
-```
+User
 
-OpenStreetMap identifiers are stored to help identify services originating from OpenStreetMap and reduce duplicate records when importing service data.
+The User resource contains:
 
----
+id
+username
+email
+password_hash
+SavedService
 
-## Running the Project Locally
+The SavedService resource connects a user to a service and can contain additional user-specific information:
 
-### Backend
+id
+user_id
+service_id
+note
+is_favorite
+Running the Project Locally
+Backend
 
 Navigate to the backend directory:
 
-```bash
 cd backend
-```
 
 Activate the virtual environment:
 
-```bash
 source venv/bin/activate
-```
-
-Start the Flask server:
-
-```bash
-python app.py
-```
-
-The API runs locally at:
-
-```text
-http://127.0.0.1:5000
-```
-
-### Frontend
-
-Open a second terminal and navigate to the frontend:
-
-```bash
-cd frontend
-```
 
 Install dependencies:
 
-```bash
+pip install -r requirements.txt
+
+Apply database migrations:
+
+flask db upgrade
+
+Start the Flask server:
+
+python app.py
+Frontend
+
+Open a second terminal and navigate to the frontend:
+
+cd frontend
+
+Install dependencies:
+
 npm install
-```
 
 Start the development server:
 
-```bash
 npm run dev
-```
-
-The frontend will normally be available at:
-
-```text
-http://localhost:5173
-```
-
----
-
-## Environment Variables
+Environment Variables
 
 The backend uses environment variables for database configuration.
 
-Create a `.env` file inside the `backend` directory:
+Create a .env file inside the backend directory:
 
-```text
 DATABASE_URL=your_postgresql_database_url
-```
 
-The `.env` file is excluded from version control using `.gitignore`.
+The .env file is excluded from version control using .gitignore.
 
----
+Database Migrations
 
-## Database Migrations
-
-The project uses Flask-Migrate/Alembic to manage database schema changes.
+The project uses Flask-Migrate and Alembic to manage database schema changes.
 
 To apply existing migrations:
 
-```bash
 flask db upgrade
-```
 
 To create a new migration after modifying the models:
 
-```bash
 flask db migrate -m "describe your change"
-```
 
 Then apply it:
 
-```bash
 flask db upgrade
-```
-
----
-
-## Project Structure
-
-```text
-hudumahub/
-│
-├── backend/
-│   ├── app.py
-│   ├── extensions.py
-│   ├── models.py
-│   ├── services.py
-│   ├── migrations/
-│   ├── .env
-│   └── .gitignore
-│
-├── frontend/
-│   └── src/
-│       ├── components/
-│       ├── services/
-│       ├── App.jsx
-│       ├── App.css
-│       └── index.css
-│
-└── README.md
-```
-
----
-
-## Data Source
+Data Source
 
 HudumaHub uses OpenStreetMap data through the Nominatim API for location search and service discovery.
 
-Nominatim is used to retrieve location information, coordinates, addresses, and OpenStreetMap identifiers.
+Nominatim provides location information such as coordinates, addresses, and OpenStreetMap identifiers.
 
----
-
-## Future Development
+Future Development
 
 Future phases of the project will focus on:
 
-* User authentication
-* Authorization and ownership-based access control
-* User-specific data
-* Additional relational resources
-* Full CRUD functionality for additional resources
-* Improved service discovery
-* Potential deployment of the full-stack application
-
----
-
-## Git Branches
+User authentication and secure login
+Authorization and ownership-based access control
+Enhanced user-specific features
+Improved service discovery and filtering
+Further improvements to the user experience
+Git Branches
 
 The project is developed using separate branches for different phases and features.
 
-The current Phase 2 implementation is available on:
+The Phase 2 implementation focuses on the Flask backend, PostgreSQL database, database relationships, CRUD functionality, and frontend-to-backend integration.
 
-```text
-phase-2-backend
-```
+Author
 
-The Phase 2 implementation includes the Flask backend, PostgreSQL integration, database migrations, service APIs, and frontend-to-backend integration.
-
----
-
-## Author
-
-**Cynthia G. Wangui**
+Cynthia G. Wangui
 
 HudumaHub — Full-Stack Development Project
-
-
-
