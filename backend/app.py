@@ -130,6 +130,11 @@ def search():
             "results": results
         }, 200
 
+    except RuntimeError as error:
+        return {
+            "error": str(error)
+        }, 503
+
     except requests.RequestException:
         return {
             "error": (
@@ -607,7 +612,7 @@ def delete_saved_service(saved_service_id):
     }, 200
 
 
-# RUN the application
+# RUN THE APPLICATION
 
 if __name__ == "__main__":
     app.run()
