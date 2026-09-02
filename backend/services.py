@@ -53,6 +53,11 @@ def search_locations(query):
         timeout=15
     )
 
+    if response.status_code == 429:
+        raise RuntimeError(
+            "Nominatim is temporarily rate-limiting HudumaHub. Please try again shortly."
+        )
+
     response.raise_for_status()
 
     return clean_results(response.json())
@@ -66,7 +71,6 @@ def search_by_category(category):
     if category not in SERVICE_CATEGORIES:
         return None
 
-    # Use the same search approach as a user's normal search
     query = SERVICE_CATEGORIES[category]
 
     return search_locations(query)
