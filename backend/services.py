@@ -1,10 +1,11 @@
+import time
 import requests
 
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
 HEADERS = {
-    "User-Agent": "HudumaHub/1.0"
+    "User-Agent": "HudumaHub/1.0 (essential services search application)"
 }
 
 SERVICE_CATEGORIES = {
@@ -14,6 +15,20 @@ SERVICE_CATEGORIES = {
     "atm": "ATM",
     "fuel": "petrol station"
 }
+
+
+# Simple in-memory cache.
+# Results are reused so repeated searches do not repeatedly
+# request the same data from Nominatim.
+CACHE = {}
+
+# Cache results for 30 minutes.
+CACHE_DURATION = 30 * 60
+
+# Keep at least one second between Nominatim requests.
+MIN_REQUEST_INTERVAL = 1.1
+
+_last_request_time = 0
 
 
 def clean_results(results, category=None):
@@ -38,6 +53,26 @@ def clean_results(results, category=None):
 def search_locations(query):
     """Search for a place or service in Nairobi."""
 
+    global _last_request_time
+
+    cache_key = query.strip().lower()
+    current_time = time.time()
+
+    # Return cached results when they are still valid.
+    if cache_key in CACHE:
+        cached_time, cached_results = CACHE[cache_key]
+
+        if current_time - cached_time < CACHE_DURATION:
+            return cached_results
+
+        del CACHE[cache_key]
+
+    # Respect the minimum interval between Nominatim requests.
+    elapsed = current_time - _last_request_time
+
+    if elapsed < MIN_REQUEST_INTERVAL:
+        time.sleep(MIN_REQUEST_INTERVAL - elapsed)
+
     params = {
         "q": f"{query}, Nairobi, Kenya",
         "format": "jsonv2",
@@ -53,14 +88,22 @@ def search_locations(query):
         timeout=15
     )
 
+    _last_request_time = time.time()
+
     if response.status_code == 429:
         raise RuntimeError(
-            "Nominatim is temporarily rate-limiting HudumaHub. Please try again shortly."
+            "Nominatim is temporarily rate-limiting HudumaHub. "
+            "Please try again shortly."
         )
 
     response.raise_for_status()
 
-    return clean_results(response.json())
+    results = clean_results(response.json())
+
+    # Store successful results in the cache.
+    CACHE[cache_key] = (time.time(), results)
+
+    return results
 
 
 def search_by_category(category):
@@ -73,4 +116,11 @@ def search_by_category(category):
 
     query = SERVICE_CATEGORIES[category]
 
-    return search_locations(query)
+    results = search_locations(query)
+
+    # Make sure the frontend receives the selected category
+    # instead of the raw OpenStreetMap result type.
+    for result in results:
+        result["category"] = category
+
+    return results
