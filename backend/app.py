@@ -51,7 +51,6 @@ def home():
 
 # DATABASE TEST
 
-
 @app.route("/api/db-test")
 def db_test():
     try:
@@ -156,17 +155,31 @@ def search_services():
             "error": "Category is required"
         }, 400
 
-    results = search_by_category(category)
+    try:
+        results = search_by_category(category)
 
-    if results is None:
+        if results is None:
+            return {
+                "error": "Unsupported service category"
+            }, 400
+
         return {
-            "error": "Unsupported service category"
-        }, 400
+            "category": category,
+            "results": results
+        }, 200
 
-    return {
-        "category": category,
-        "results": results
-    }, 200
+    except RuntimeError as error:
+        return {
+            "error": str(error)
+        }, 503
+
+    except requests.RequestException:
+        return {
+            "error": (
+                "We couldn't complete the service search "
+                "right now. Please try again."
+            )
+        }, 503
 
 
 # AUTHENTICATION
@@ -595,7 +608,6 @@ def delete_saved_service(saved_service_id):
 
 
 # RUN the application
-
 
 if __name__ == "__main__":
     app.run()
