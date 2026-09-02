@@ -1,8 +1,5 @@
 import requests
 
-from extensions import db
-from models import Service
-
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
@@ -11,15 +8,36 @@ HEADERS = {
 }
 
 SERVICE_CATEGORIES = {
-    "hospital": "hospitals in Nairobi",
-    "pharmacy": "pharmacies in Nairobi",
-    "police": "police station Nairobi",
-    "atm": "ATMs in Nairobi",
-    "fuel": "petrol station Nairobi"
+    "hospital": "hospital",
+    "pharmacy": "pharmacy",
+    "police": "police station",
+    "atm": "ATM",
+    "fuel": "petrol station"
 }
 
 
+def clean_results(results, category=None):
+    """Format Nominatim results for the HudumaHub frontend."""
+
+    cleaned_results = []
+
+    for result in results:
+        cleaned_results.append({
+            "name": result.get("name") or result.get("display_name"),
+            "category": category or result.get("type", "service"),
+            "address": result.get("display_name"),
+            "latitude": float(result["lat"]),
+            "longitude": float(result["lon"]),
+            "osm_id": result.get("osm_id"),
+            "osm_type": result.get("osm_type")
+        })
+
+    return cleaned_results
+
+
 def search_locations(query):
+    """Search for a place or service in Nairobi."""
+
     params = {
         "q": f"{query}, Nairobi, Kenya",
         "format": "jsonv2",
@@ -32,37 +50,23 @@ def search_locations(query):
         NOMINATIM_URL,
         params=params,
         headers=HEADERS,
-        timeout=10
+        timeout=15
     )
 
     response.raise_for_status()
 
-    results = response.json()
-
-    cleaned_results = []
-
-    for result in results:
-        cleaned_results.append({
-            "name": result.get("name") or result.get("display_name"),
-            "category": result.get("type"),
-            "address": result.get("display_name"),
-            "latitude": float(result["lat"]),
-            "longitude": float(result["lon"]),
-            "osm_id": result.get("osm_id"),
-            "osm_type": result.get("osm_type")
-        })
-
-    return cleaned_results
+    return clean_results(response.json())
 
 
 def search_by_category(category):
+    """Search a service category in Nairobi using Nominatim."""
+
     category = category.lower().strip()
 
     if category not in SERVICE_CATEGORIES:
         return None
 
-    services = Service.query.filter_by(
-        category=category
-    ).all()
+    # Use the same search approach as a user's normal search
+    query = SERVICE_CATEGORIES[category]
 
-    return [service.to_dict() for service in services]
+    return search_locations(query)

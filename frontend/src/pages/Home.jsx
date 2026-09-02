@@ -23,6 +23,7 @@ function Home({
 
   const RESULTS_PER_PAGE = 10;
 
+  // Reset to page 1 whenever search results change
   useEffect(() => {
     setCurrentPage(1);
   }, [services]);
@@ -39,6 +40,7 @@ function Home({
     startIndex + RESULTS_PER_PAGE
   );
 
+  // Search using text entered by the user
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       setMessage(
@@ -75,6 +77,7 @@ function Home({
     }
   };
 
+  // Search services by category
   const handleCategorySearch = async (category) => {
     setLoading(true);
     setError("");
@@ -104,12 +107,14 @@ function Home({
     }
   };
 
+  // Allow searching when Enter is pressed
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       handleSearch();
     }
   };
 
+  // Select a service and scroll to the map
   const handleSelectService = (service) => {
     setSelectedService(service);
 
@@ -123,6 +128,7 @@ function Home({
     }, 100);
   };
 
+  // Change results page
   const handlePageChange = (page) => {
     setCurrentPage(page);
     setSelectedService(null);
@@ -136,11 +142,31 @@ function Home({
   };
 
   const categories = [
-    { id: "hospital", label: "Hospitals", icon: "🏥" },
-    { id: "pharmacy", label: "Pharmacies", icon: "💊" },
-    { id: "atm", label: "ATMs", icon: "🏧" },
-    { id: "police", label: "Police", icon: "👮🏽" },
-    { id: "fuel", label: "Fuel", icon: "⛽" },
+    {
+      id: "hospital",
+      label: "Hospitals",
+      icon: "🏥",
+    },
+    {
+      id: "pharmacy",
+      label: "Pharmacies",
+      icon: "💊",
+    },
+    {
+      id: "atm",
+      label: "ATMs",
+      icon: "🏧",
+    },
+    {
+      id: "police",
+      label: "Police",
+      icon: "👮🏽",
+    },
+    {
+      id: "fuel",
+      label: "Fuel",
+      icon: "⛽",
+    },
   ];
 
   return (
@@ -218,8 +244,12 @@ function Home({
         <section className="results-section">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">DISCOVER</span>
+              <span className="eyebrow">
+                DISCOVER
+              </span>
+
               <h2>Places around Nairobi</h2>
+
               <p>
                 Explore essential services and save the ones
                 that matter to you.
@@ -283,7 +313,9 @@ function Home({
                 onClick={() =>
                   handlePageChange(currentPage + 1)
                 }
-                disabled={currentPage === totalPages}
+                disabled={
+                  currentPage === totalPages
+                }
               >
                 Next →
               </button>
